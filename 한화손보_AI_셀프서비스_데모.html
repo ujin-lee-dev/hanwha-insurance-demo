@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한화손보 AI 고객 셀프서비스</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#F5F8FC;color:#0F1E3D;font-size:13px;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+:root{--navy:#1B2F5C;--blue:#1E5FAD;--lblue:#D6E8FA;--orng:#F47B20;--lorng:#FEE8D5;--grn:#17A86A;--lgrn:#D4F0E3;--red:#E03E3E;--lred:#FDDCDC;--amb:#BA7517;--lamb:#FAEEDA;--gray:#64748B;--lgray:#F5F8FC;--border:#E2ECF7;--white:#FFFFFF;--text:#0F1E3D;--tsub:#64748B;--tmut:#94A3B8}
+
+/* 헤더 */
+.hdr{background:var(--navy);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 12px rgba(0,0,0,0.2)}
+.hdr-logo{display:flex;align-items:center;gap:9px;color:#fff;font-size:15px;font-weight:700}
+.hdr-logo span{color:var(--orng);font-size:20px}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.user-badge{display:flex;align-items:center;gap:8px;background:#243B5E;border-radius:8px;padding:5px 12px}
+.uav{width:26px;height:26px;border-radius:50%;background:var(--orng);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.uname{font-size:12px;font-weight:600;color:#fff}
+.uid{font-size:10px;color:#7A9CC8;margin-top:1px}
+.logout-btn{background:transparent;border:1px solid #4A6A9C;color:#B8CFEE;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit}
+
+/* 탭바 */
+.tabbar{background:#fff;border-bottom:1px solid var(--border);display:flex;flex-shrink:0}
+.tab-btn{padding:10px 18px;font-size:12px;color:var(--tsub);cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;background:transparent;border-top:none;border-left:none;border-right:none;white-space:nowrap}
+.tab-btn.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+
+/* 바디 */
+.body{display:flex;flex:1;overflow:hidden}
+
+/* 사이드바 */
+.sidebar{width:188px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-lbl{font-size:10px;color:var(--tmut);padding:8px 14px 3px;letter-spacing:.07em;text-transform:uppercase;font-weight:600}
+.si{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;font-size:12px;color:var(--tsub);border-left:2px solid transparent;transition:all .12s}
+.si:hover{background:var(--lgray);color:var(--text)}
+.si.on{background:var(--lblue);color:var(--blue);border-left-color:var(--blue);font-weight:600}
+.si-ico{font-size:15px;flex-shrink:0;width:18px;text-align:center}
+.sbadge{margin-left:auto;background:var(--lblue);color:var(--blue);font-size:9px;padding:1px 5px;border-radius:8px;font-weight:600}
+.si.on .sbadge{background:var(--blue);color:#fff}
+
+/* 메인 */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.ph{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#fff}
+.ph-t{font-size:14px;font-weight:700}
+.ph-s{font-size:11px;color:var(--tsub)}
+.pb{flex:1;overflow-y:auto;padding:13px 16px}
+.panel{display:none;flex-direction:column;height:100%}
+.panel.on{display:flex}
+
+/* 공통 카드 */
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:9px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.ct{font-size:12px;font-weight:700;color:var(--blue);margin-bottom:7px}
+.row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px}
+.row:last-child{border-bottom:none}
+.lbl{color:var(--tsub)}.val{font-weight:600}
+.val.g{color:var(--grn)}.val.b{color:var(--blue)}.val.a{color:var(--amb)}.val.r{color:var(--red)}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600}
+.bg-g{background:var(--lgrn);color:var(--grn)}.bg-b{background:var(--lblue);color:var(--blue)}.bg-o{background:var(--lorng);color:var(--amb)}.bg-r{background:var(--lred);color:var(--red)}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot.g{background:var(--grn)}.dot.r{background:var(--red)}.dot.o{background:var(--orng)}
+.warn{background:var(--lamb);border-radius:8px;padding:9px 12px;font-size:11px;color:#633806;line-height:1.6;margin-top:5px}
+.info{background:var(--lblue);border-radius:8px;padding:9px 12px;font-size:11px;color:#0C447C;line-height:1.6;margin-top:5px}
+.ok-box{background:var(--lgrn);border-radius:8px;padding:9px 12px;font-size:11px;color:#1a5c3a;line-height:1.6;margin-top:5px}
+
+/* AI 상담 */
+.chat-wrap{display:flex;flex-direction:column;height:100%}
+.msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding-bottom:6px}
+.msg{display:flex;gap:8px;align-items:flex-start}.msg.u{flex-direction:row-reverse}
+.av{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.av.ai{background:var(--lblue);color:var(--blue)}.av.me{background:var(--lgrn);color:var(--grn)}
+.bub{max-width:80%;padding:8px 12px;font-size:12px;line-height:1.65;border-radius:4px 12px 12px 12px;background:var(--lgray);color:var(--text)}
+.bub.u{background:var(--blue);color:#fff;border-radius:12px 4px 12px 12px}
+.qbtns{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.qb{background:#fff;border:1px solid var(--blue);color:var(--blue);font-size:11px;padding:4px 9px;border-radius:14px;cursor:pointer;font-family:inherit}
+.qb:hover{background:var(--lblue)}
+.chat-inp{padding:10px 0 2px;display:flex;gap:7px;align-items:flex-end;flex-shrink:0;border-top:1px solid var(--border);padding-top:10px}
+.chat-inp textarea{flex:1;resize:none;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit;background:var(--lgray);color:var(--text);height:36px;line-height:1.4;outline:none}
+.send-btn{width:36px;height:36px;background:var(--blue);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.send-btn:hover{background:#0C447C}
+.tdots{display:flex;gap:3px;align-items:center}
+.td{width:5px;height:5px;border-radius:50%;background:var(--tmut);animation:bn 1s infinite}
+.td:nth-child(2){animation-delay:.15s}.td:nth-child(3){animation-delay:.3s}
+@keyframes bn{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-4px)}}
+.ai-st{font-size:11px;color:var(--tsub);display:flex;align-items:center;gap:5px}
+
+/* 태그 */
+.tag-wrap{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.tag{padding:5px 10px;border-radius:14px;border:1px solid var(--border);font-size:11px;cursor:pointer;color:var(--tsub);background:#fff;font-family:inherit;transition:all .12s}
+.tag:hover{border-color:var(--blue);color:var(--blue)}
+.tag.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.check-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 0;font-size:12px;cursor:pointer;width:100%;margin-top:4px;font-family:inherit;font-weight:600}
+
+/* 계산기 */
+.sc-tabs{display:flex;gap:5px;margin-bottom:12px}
+.sc-tab{flex:1;padding:7px;border:1px solid var(--border);border-radius:8px;font-size:11px;cursor:pointer;text-align:center;color:var(--tsub);background:#fff;font-family:inherit}
+.sc-tab.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+input[type=range]{width:100%;accent-color:var(--blue);cursor:pointer}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
+.calc-card{background:var(--lgray);border-radius:8px;padding:10px 12px}
+.calc-num{font-size:18px;font-weight:700;color:var(--text);margin-top:2px}
+.rtbl{width:100%;font-size:11px;border-collapse:collapse;margin-top:10px}
+.rtbl td{padding:5px 0;border-bottom:1px solid var(--border)}
+.rtbl tr:last-child td{border-bottom:none}
+.rl{color:var(--tsub)}.rv{text-align:right;font-weight:600}
+.hl td{color:var(--blue)!important}
+
+/* 청구 스텝 */
+.step-bar{display:flex;align-items:center;margin-bottom:13px}
+.step{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--tsub);flex-shrink:0;transition:all .3s}
+.step.done{background:var(--blue);border-color:var(--blue);color:#fff}
+.step.active{border-color:var(--blue);color:var(--blue)}
+.sline{height:1px;flex:1;background:var(--border);margin:0 3px;transition:background .3s}
+.sline.done{background:var(--blue)}
+.slbl{font-size:10px;color:var(--tsub)}.slbl.active{color:var(--blue);font-weight:600}
+
+/* 연락처 */
+.qc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:13px}
+.qc-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer}
+.qc-card:hover{border-color:var(--blue);background:var(--lblue)}
+.qc-ico{font-size:20px;margin-bottom:4px}
+.qc-nm{font-size:11px;font-weight:600}.qc-num{font-size:10px;color:var(--tsub);margin-top:1px}
+.ars-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}
+.ars-key{background:var(--lgray);border-radius:7px;padding:7px;display:flex;align-items:center;gap:7px}
+.ars-circle{width:22px;height:22px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.cc-acts{display:flex;gap:5px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border)}
+.cc-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:7px 4px;border-radius:7px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text);font-family:inherit}
+.cc-btn:hover{background:var(--lgray)}
+.cc-btn.p{background:var(--blue);color:#fff;border-color:var(--blue)}
+.fp-av{width:36px;height:36px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+
+/* Q&A */
+.qa-item{background:#fff;border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:5px}
+.qa-q{display:flex;align-items:center;gap:7px;padding:9px 12px;cursor:pointer}
+.qa-q:hover{background:var(--lgray)}
+.qa-num{width:20px;height:20px;background:var(--lblue);color:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.qa-qtxt{font-size:12px;font-weight:600;flex:1}
+.qa-cat{font-size:10px;padding:2px 6px;border-radius:5px;flex-shrink:0;background:var(--lblue);color:var(--blue)}
+.qa-chev{color:var(--tmut);font-size:12px;transition:transform .2s}
+.qa-item.open .qa-chev{transform:rotate(180deg)}
+.qa-ans{display:none;padding:0 12px 10px 39px;font-size:11px;color:var(--tsub);line-height:1.75;border-top:1px solid var(--border)}
+.qa-tip{background:var(--lblue);border-radius:6px;padding:5px 9px;margin-top:6px;font-size:10px;color:#0C447C}
+.qa-item.open .qa-ans{display:block}
+
+/* 관리자 */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.kpi-l{font-size:10px;color:var(--tsub);margin-bottom:3px}
+.kpi-v{font-size:22px;font-weight:700}
+.kpi-s{font-size:10px;margin-top:2px;color:var(--grn)}
+.chart-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px}
+.chart-t{font-size:11px;font-weight:700;margin-bottom:8px}
+.bar-wrap{display:flex;align-items:flex-end;gap:4px;height:80px}
+.bcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.bar{width:100%;border-radius:3px 3px 0 0}
+.bar.ai{background:var(--blue)}.bar.cs{background:var(--lblue)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.log-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px}
+.log-row:last-child{border-bottom:none}
+.lt{font-size:10px;padding:1px 5px;border-radius:4px;flex-shrink:0}
+.lt.ai{background:var(--lblue);color:var(--blue)}.lt.cs{background:var(--lamb);color:var(--amb)}
+.lm{flex:1}.ltm{color:var(--tmut);font-size:10px}
+.pie-wrap{display:flex;align-items:center;gap:12px}
+.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--tsub);margin-bottom:3px}
+.ld{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.doc-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.doc-row:last-child{border-bottom:none}
+.doc-ic{width:26px;height:26px;background:var(--lblue);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-logo"><span>🛡</span> 한화손보 AI 셀프서비스</div>
+  <div class="hdr-right">
+    <div class="user-badge">
+      <div class="uav">김</div>
+      <div><div class="uname">김민준 고객님</div><div class="uid">2019-038471</div></div>
+    </div>
+    <button class="logout-btn">↩ 로그아웃</button>
+  </div>
+</header>
+
+<div class="tabbar">
+  <button class="tab-btn on" onclick="switchTab('self',this)">👤 고객 셀프서비스</button>
+  <button class="tab-btn" onclick="switchTab('admin',this)">📊 관리자 대시보드</button>
+</div>
+
+<div class="body">
+
+  <!-- 고객 셀프서비스 -->
+  <div id="pg-self" style="display:flex;flex:1;overflow:hidden">
+    <div class="sidebar">
+      <div class="sb-lbl">셀프서비스</div>
+      <div class="si on" onclick="showPanel('chat',this)"><span class="si-ico">🤖</span> AI 상담 <span class="sbadge">Claude</span></div>
+      <div class="si" onclick="showPanel('pay',this)"><span class="si-ico">💳</span> 납입 확인</div>
+      <div class="si" onclick="showPanel('contract',this)"><span class="si-ico">📄</span> 계약 조회</div>
+      <div class="si" onclick="showPanel('cert',this)"><span class="si-ico">🖨</span> 증권 재발급</div>
+      <div class="si" onclick="showPanel('surrender',this)"><span class="si-ico">💰</span> 해지환급금</div>
+      <div class="si" onclick="showPanel('cov',this)"><span class="si-ico">🛡</span> 보장 체크</div>
+      <div class="si" onclick="showPanel('calc',this)"><span class="si-ico">📈</span> 납입 계산기</div>
+      <div class="si" onclick="showPanel('claim',this)"><span class="si-ico">📋</span> 보험금 청구</div>
+      <div class="si" onclick="showPanel('contact',this)"><span class="si-ico">📞</span> 연락처</div>
+      <div class="si" onclick="showPanel('qa',this)"><span class="si-ico">❓</span> Q&amp;A 모범답변</div>
+      <div style="flex:1"></div>
+      <div style="padding:8px 14px;font-size:10px;color:var(--tmut)">본인인증 완료 · PASS</div>
+    </div>
+
+    <div class="main">
+
+      <!-- 1. AI 상담 -->
+      <div id="panel-chat" class="panel on">
+        <div class="ph"><span class="ph-t">AI 상담 <span style="font-size:10px;color:var(--tmut);font-weight:400">Claude API 연동</span></span><span class="ai-st"><span class="dot g"></span><span id="ai-st">대기 중</span></span></div>
+        <div class="pb">
+          <div class="chat-wrap">
+            <div class="msgs" id="msgs">
+              <div class="msg">
+                <div class="av ai">🤖</div>
+                <div>
+                  <div class="bub">안녕하세요, 김민준 고객님! 한화손보 AI 상담사입니다. 보험 관련 궁금한 점을 편하게 물어보세요 😊</div>
+                  <div class="qbtns">
+                    <button class="qb" onclick="sendQ('이번달 보험료 납입됐나요?')">보험료 납입 확인</button>
+                    <button class="qb" onclick="sendQ('보험금 청구 서류가 뭔가요?')">청구 서류 안내</button>
+                    <button class="qb" onclick="sendQ('제 계약 내용 알려주세요')">계약 조회</button>
+                    <button class="qb" onclick="sendQ('해지하면 얼마 받을 수 있나요?')">해지환급금</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="chat-inp">
+              <textarea id="ci" placeholder="궁금한 점을 입력하세요..." onkeydown="hk(event)"></textarea>
+              <button class="send-btn" onclick="hs()">➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 납입 확인 -->
+      <div id="panel-pay" class="panel">
+        <div class="ph"><span class="ph-t">납입 확인</span><span class="ph-s">2025년 5월 기준</span></div>
+        <div class="pb">
+          <div class="card">
+            <div class="ct">✅ 이번 달 납입 현황</div>
+            <div class="row"><span class="lbl">무배당 종신보험</span><span class="val g"><span class="dot g"></span> 완료 · 198,400원</span></div>
+            <div class="row"><span class="lbl">실손의료보험</span><span class="val g"><span class="dot g"></span> 완료 · 42,100원</span></div>
+            <div class="row"><span class="lbl">어린이보험</span><span class="val a"><span class="dot o"></span> 미납 · 67,300원 (납기 5/25)</span></div>
+          </div>
+          <div class="warn">⚠ <b>어린이보험 미납 안내</b><br>납기일 5월 25일까지 납입하지 않으면 계약이 실효될 수 있습니다. 자동이체 계좌를 확인해 주세요.</div>
+          <div class="card" style="margin-top:10px">
+            <div class="ct">📅 최근 3개월 납입 이력</div>
+            <div class="row"><span class="lbl">2025.05</span><span class="val">307,800원 (어린이보험 미납)</span></div>
+            <div class="row"><span class="lbl">2025.04</span><span class="val g">375,100원 · 전액완납</span></div>
+            <div class="row"><span class="lbl">2025.03</span><span class="val g">375,100원 · 전액완납</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. 계약 조회 -->
+      <div id="panel-contract" class="panel">
+        <div class="ph"><span class="ph-t">계약 조회</span><span class="ph-s">보유 계약 3건</span></div>
+        <div class="pb">
+          <div class="card">
+            <div class="ct">📄 무배당 종신보험 · 21-3847102</div>
+            <div class="row"><span class="lbl">계약자</span><span class="val">김민준</span></div>
+            <div class="row"><span class="lbl">피보험자</span><span class="val">김민준 (본인)</span></div>
+            <div class="row"><span class="lbl">계약시작일</span><span class="val">2021.03.15</span></div>
+            <div class="row"><span class="lbl">만기일</span><span class="val">종신</span></div>
+            <div class="row"><span class="lbl">주보장</span><span class="val">사망보험금 1억원</span></div>
+            <div class="row"><span class="lbl">월 보험료</span><span class="val">198,400원</span></div>
+            <div class="row"><span class="lbl">납입상태</span><span class="val g">정상유지</span></div>
+          </div>
+          <div class="card">
+            <div class="ct">📄 실손의료보험 · 22-9041523</div>
+            <div class="row"><span class="lbl">계약자</span><span class="val">김민준</span></div>
+            <div class="row"><span class="lbl">피보험자</span><span class="val">김민준 (본인)</span></div>
+            <div class="row"><span class="lbl">계약시작일</span><span class="val">2022.07.01</span></div>
+            <div class="row"><span class="lbl">계약종료일</span><span class="val">2023.07.01</span></div>
+            <div class="row"><span class="lbl">만기일</span><span class="val">2122.07.01 (갱신형)</span></div>
+            <div class="row"><span class="lbl">보장한도</span><span class="val">연 5,000만원</span></div>
+            <div class="row"><span class="lbl">월 보험료</span><span class="val">42,100원</span></div>
+            <div class="row"><span class="lbl">납입상태</span><span class="val g">정상유지</span></div>
+          </div>
+          <div class="card">
+            <div class="ct">📄 어린이보험 · 23-1120038</div>
+            <div class="row"><span class="lbl">계약자</span><span class="val">김민준</span></div>
+            <div class="row"><span class="lbl">피보험자</span><span class="val">김다인 (자녀)</span></div>
+            <div class="row"><span class="lbl">계약시작일</span><span class="val">2023.02.10</span></div>
+            <div class="row"><span class="lbl">만기일</span><span class="val">2043.02.10</span></div>
+            <div class="row"><span class="lbl">월 보험료</span><span class="val">67,300원</span></div>
+            <div class="row"><span class="lbl">납입상태</span><span class="val a">미납 주의</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. 증권 재발급 -->
+      <div id="panel-cert" class="panel">
+        <div class="ph"><span class="ph-t">보험증권 재발급</span></div>
+        <div class="pb">
+          <div style="font-size:12px;color:var(--tsub);margin-bottom:10px">발급 방법을 선택해 주세요.</div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div class="card" style="cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:0" onclick="certDone()">
+              <div style="width:30px;height:30px;background:var(--lblue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px">📧</div>
+              <div><div style="font-size:12px;font-weight:600">이메일 발송</div><div style="font-size:10px;color:var(--tsub)">kim****@naver.com · 즉시</div></div>
+              <span style="margin-left:auto;color:var(--tmut)">›</span>
+            </div>
+            <div class="card" style="cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:0" onclick="certDone()">
+              <div style="width:30px;height:30px;background:var(--lblue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px">💬</div>
+              <div><div style="font-size:12px;font-weight:600">카카오톡</div><div style="font-size:10px;color:var(--tsub)">즉시 수령</div></div>
+              <span style="margin-left:auto;color:var(--tmut)">›</span>
+            </div>
+            <div class="card" style="cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:0" onclick="certDone()">
+              <div style="width:30px;height:30px;background:var(--lblue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px">📮</div>
+              <div><div style="font-size:12px;font-weight:600">우편 발송</div><div style="font-size:10px;color:var(--tsub)">3~5 영업일</div></div>
+              <span style="margin-left:auto;color:var(--tmut)">›</span>
+            </div>
+          </div>
+          <div id="cert-ok" style="display:none" class="ok-box">✅ 발급 요청이 완료됐습니다. 선택하신 방법으로 발송됩니다.</div>
+        </div>
+      </div>
+
+      <!-- 5. 해지환급금 -->
+      <div id="panel-surrender" class="panel">
+        <div class="ph"><span class="ph-t">해지환급금 조회</span></div>
+        <div class="pb">
+          <div class="card">
+            <div class="ct">무배당 종신보험 기준</div>
+            <div class="row"><span class="lbl">현재 해지환급금</span><span class="val b" style="font-size:15px;font-weight:700">4,820,000원</span></div>
+            <div class="row"><span class="lbl">납입보험료 대비</span><span class="val">약 31.2%</span></div>
+            <div class="row"><span class="lbl">1년 후 예상</span><span class="val g">5,410,000원</span></div>
+            <div class="row"><span class="lbl">3년 후 예상</span><span class="val g">6,980,000원</span></div>
+            <div class="row"><span class="lbl">10년 후 예상</span><span class="val g">12,340,000원</span></div>
+          </div>
+          <div class="warn">⚠ <b>해지 전 꼭 확인하세요</b><br>지금 해지 시 납입보험료의 <b>68.8%가 손실</b>됩니다.<br>감액완납·납입유예 등 대안을 먼저 검토하세요.</div>
+          <div class="card" style="margin-top:10px">
+            <div class="ct">💡 대안 제도 안내</div>
+            <div class="row"><span class="lbl">납입유예</span><span class="val b">최대 1년 · 보장 유지</span></div>
+            <div class="row"><span class="lbl">감액완납</span><span class="val b">보험료 면제 · 보장 축소</span></div>
+            <div class="row"><span class="lbl">약관대출</span><span class="val b">환급금의 80%까지 가능</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. 보장 체크 -->
+      <div id="panel-cov" class="panel">
+        <div class="ph"><span class="ph-t">보장 체크</span><span class="ph-s">내 계약 기준</span></div>
+        <div class="pb">
+          <div style="margin-bottom:10px">
+            <div style="font-size:11px;color:var(--tsub);margin-bottom:6px;font-weight:600">상황 선택</div>
+            <div class="tag-wrap" id="sit-tags">
+              <button class="tag on" onclick="togTag(this,'sit')">외래 진료</button>
+              <button class="tag" onclick="togTag(this,'sit')">입원</button>
+              <button class="tag" onclick="togTag(this,'sit')">수술</button>
+              <button class="tag" onclick="togTag(this,'sit')">암 진단</button>
+              <button class="tag" onclick="togTag(this,'sit')">골절/상해</button>
+              <button class="tag" onclick="togTag(this,'sit')">사망</button>
+            </div>
+          </div>
+          <div style="margin-bottom:10px">
+            <div style="font-size:11px;color:var(--tsub);margin-bottom:6px;font-weight:600">진료 종류</div>
+            <div class="tag-wrap" id="type-tags">
+              <button class="tag on" onclick="togTag(this,'type')">일반 질병</button>
+              <button class="tag" onclick="togTag(this,'type')">재해/사고</button>
+              <button class="tag" onclick="togTag(this,'type')">선천성 질환</button>
+              <button class="tag" onclick="togTag(this,'type')">정신과</button>
+            </div>
+          </div>
+          <button class="check-btn" onclick="runCovCheck()">🛡 보장 여부 확인</button>
+          <div id="cov-result" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- 7. 납입 계산기 -->
+      <div id="panel-calc" class="panel">
+        <div class="ph"><span class="ph-t">납입 계산기</span><span class="ph-s">시나리오 비교</span></div>
+        <div class="pb">
+          <div class="sc-tabs">
+            <button class="sc-tab on" onclick="setScen('normal',this)">정상 유지</button>
+            <button class="sc-tab" onclick="setScen('pause',this)">납입 유예</button>
+            <button class="sc-tab" onclick="setScen('reduce',this)">감액 완납</button>
+            <button class="sc-tab" onclick="setScen('quit',this)">해지</button>
+          </div>
+          <div style="margin-bottom:9px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--tsub)">경과 연수</span><span style="font-weight:600" id="yr-lbl">4년</span></div>
+            <input type="range" min="1" max="30" value="4" id="yr-sl" oninput="calcUpd()">
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--tsub)">월 납입액</span><span style="font-weight:600" id="mp-lbl">198,400원</span></div>
+            <input type="range" min="50000" max="500000" value="198400" step="1000" id="mp-sl" oninput="calcUpd()">
+          </div>
+          <div class="calc-grid">
+            <div class="calc-card"><div style="font-size:10px;color:var(--tsub)">총 납입보험료</div><div class="calc-num" id="c-total">0원</div></div>
+            <div class="calc-card"><div style="font-size:10px;color:var(--tsub)">예상 환급금</div><div class="calc-num" id="c-refund" style="color:var(--blue)">0원</div></div>
+          </div>
+          <table class="rtbl">
+            <tr><td class="rl">시나리오</td><td class="rv" id="sc-nm">-</td></tr>
+            <tr><td class="rl">환급률</td><td class="rv" id="sc-rate">-</td></tr>
+            <tr><td class="rl">납입 기간</td><td class="rv" id="sc-period">-</td></tr>
+            <tr class="hl"><td class="rl">포인트</td><td class="rv" id="sc-tip">-</td></tr>
+          </table>
+          <div class="warn" id="sc-warn" style="display:none;margin-top:8px"></div>
+        </div>
+      </div>
+
+      <!-- 8. 보험금 청구 -->
+      <div id="panel-claim" class="panel">
+        <div class="ph"><span class="ph-t">보험금 청구 접수</span><span class="badge bg-b" id="claim-badge">서류 준비 중</span></div>
+        <div class="pb">
+          <div class="step-bar">
+            <div style="display:flex;align-items:center;gap:3px"><div class="step done" id="st1">✓</div><span class="slbl">유형</span></div>
+            <div class="sline done"></div>
+            <div style="display:flex;align-items:center;gap:3px"><div class="step active" id="st2">2</div><span class="slbl active">서류</span></div>
+            <div class="sline" id="sl2"></div>
+            <div style="display:flex;align-items:center;gap:3px"><div class="step" id="st3">3</div><span class="slbl">업로드</span></div>
+            <div class="sline" id="sl3"></div>
+            <div style="display:flex;align-items:center;gap:3px"><div class="step" id="st4">4</div><span class="slbl">완료</span></div>
+          </div>
+          <div id="claim-s2">
+            <div class="card">
+              <div class="ct">실손 외래 청구 · 필요 서류</div>
+              <div class="doc-row"><div class="doc-ic">🧾</div><div><div style="font-size:11px;font-weight:600">진료비 영수증</div><div style="font-size:10px;color:var(--tsub)">병원 발급</div></div><span class="badge bg-g" style="margin-left:auto">준비완료</span></div>
+              <div class="doc-row"><div class="doc-ic">📋</div><div><div style="font-size:11px;font-weight:600">진료비 세부내역서</div><div style="font-size:10px;color:var(--tsub)">병원 발급</div></div><span class="badge bg-b" style="margin-left:auto">필수</span></div>
+              <div class="doc-row"><div class="doc-ic" style="background:var(--lgray)">📄</div><div><div style="font-size:11px;font-weight:600">진단서</div><div style="font-size:10px;color:var(--tsub)">입원·수술 시만</div></div><span class="badge" style="margin-left:auto;background:var(--lgray);color:var(--tsub)">해당없음</span></div>
+            </div>
+            <div class="card">
+              <div class="row"><span class="lbl">청구 예상 금액</span><span class="val b" style="font-size:14px;font-weight:700">47,800원</span></div>
+              <div class="row"><span class="lbl">예상 처리 기간</span><span class="val">3 영업일 이내</span></div>
+              <div style="background:var(--border);border-radius:4px;height:5px;margin-top:8px;overflow:hidden"><div style="height:100%;background:var(--blue);border-radius:4px;width:40%;transition:width .5s" id="c-prog"></div></div>
+            </div>
+            <div class="card">
+              <div style="font-size:11px;color:var(--tsub);margin-bottom:6px">서류 업로드</div>
+              <div onclick="doUpload()" style="border:2px dashed var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer" onmouseover="this.style.borderColor='var(--blue)';this.style.background='var(--lblue)'" onmouseout="this.style.borderColor='var(--border)';this.style.background=''">
+                <div style="font-size:24px;margin-bottom:5px">☁️</div>
+                <div style="font-size:11px;font-weight:600">클릭하여 업로드</div>
+              </div>
+              <div id="up-ok" style="display:none" class="ok-box">✅ AI 서류 확인 완료</div>
+            </div>
+            <div style="display:flex;gap:6px;justify-content:flex-end">
+              <button style="padding:7px 14px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:11px;cursor:pointer;font-family:inherit">이전</button>
+              <button onclick="goClaimDone()" style="padding:7px 14px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:600">다음 · 업로드</button>
+            </div>
+          </div>
+          <div id="claim-s3" style="display:none;text-align:center;padding:20px 0">
+            <div style="font-size:40px;margin-bottom:10px">✅</div>
+            <div style="font-size:15px;font-weight:700;margin-bottom:5px">청구 접수 완료!</div>
+            <div style="font-size:11px;color:var(--tsub);margin-bottom:12px">접수번호: CLM-2025-084721</div>
+            <div class="card" style="text-align:left">
+              <div class="row"><span class="lbl">예상 지급액</span><span class="val b">47,800원</span></div>
+              <div class="row"><span class="lbl">예상 처리일</span><span class="val">2025.05.23 (3영업일)</span></div>
+              <div class="row"><span class="lbl">알림 수신</span><span class="val">카카오톡 · 문자</span></div>
+            </div>
+            <button onclick="resetClaim()" style="margin-top:10px;padding:7px 20px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:11px;cursor:pointer;font-family:inherit">처음으로</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. 연락처 -->
+      <div id="panel-contact" class="panel">
+        <div class="ph"><span class="ph-t">연락처</span><span class="badge bg-g"><span class="dot g"></span> 현재 운영 중</span></div>
+        <div class="pb">
+          <div class="qc-grid">
+            <div class="qc-card"><div class="qc-ico">🎧</div><div class="qc-nm">대표 고객센터</div><div class="qc-num">1566-8000</div></div>
+            <div class="qc-card"><div class="qc-ico">🚗</div><div class="qc-nm">자동차 긴급출동</div><div class="qc-num">1588-8282 · 24h</div></div>
+            <div class="qc-card"><div class="qc-ico">👤</div><div class="qc-nm">담당 FP</div><div class="qc-num">이서연 설계사</div></div>
+          </div>
+          <div class="card">
+            <div class="ct">🎧 한화손보 고객센터</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px">
+              <div style="background:var(--lgray);border-radius:7px;padding:8px 10px"><div style="font-size:14px;font-weight:700;color:var(--blue)">1566-8000</div><div style="font-size:10px;color:var(--tsub)">대표번호 (ARS 0번→상담원)</div></div>
+              <div style="background:var(--lgray);border-radius:7px;padding:8px 10px"><div style="font-size:12px;font-weight:700;color:var(--blue)">+82-2-316-0100</div><div style="font-size:10px;color:var(--tsub)">해외에서 연결</div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;padding-top:8px;border-top:1px solid var(--border)">
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--tsub)">일반상담</span><b>평일 09:00~16:00</b></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--tsub)">약관대출</span><b>평일 09:00~18:00</b></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--tsub)">토·일·공휴일</span><b style="color:var(--red)">상담원 휴무</b></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--tsub)">ARS·긴급출동</span><b style="color:var(--grn)">24시간</b></div>
+            </div>
+            <div class="cc-acts">
+              <button class="cc-btn p">📞 1566-8000</button>
+              <button class="cc-btn">🚗 긴급출동</button>
+              <button class="cc-btn">🌐 홈페이지</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ct">👤 담당 재무설계사 (FP)</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">
+              <div class="fp-av">이서</div>
+              <div>
+                <div style="font-size:13px;font-weight:700">이서연 설계사</div>
+                <div style="font-size:11px;color:var(--tsub);margin-top:2px">한화손보 부산중앙지점 · 선임 FP</div>
+              </div>
+              <span class="badge bg-g" style="margin-left:auto"><span class="dot g"></span> 근무 중</span>
+            </div>
+            <div style="font-size:11px;color:var(--tsub);line-height:1.8;padding-top:8px;border-top:1px solid var(--border)">
+              <b style="color:var(--text)">담당 계약:</b> 무배당 종신보험, 어린이보험<br>
+              <b style="color:var(--text)">상담 가능:</b> 평일 10:00~18:00, 토 10:00~13:00
+            </div>
+            <div class="cc-acts">
+              <button class="cc-btn p">📞 010-9231-4872</button>
+              <button class="cc-btn">💬 카카오</button>
+              <button class="cc-btn">📅 상담 예약</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ct">⌨ ARS 단축번호 (1566-8000)</div>
+            <div class="ars-grid">
+              <div class="ars-key"><div class="ars-circle" style="background:var(--navy)">0</div><div><div style="font-size:11px;font-weight:600">상담원 연결</div><div style="font-size:10px;color:var(--tsub)">바로 연결</div></div></div>
+              <div class="ars-key"><div class="ars-circle">1</div><div><div style="font-size:11px;font-weight:600">보험금 청구</div><div style="font-size:10px;color:var(--tsub)">사고 접수</div></div></div>
+              <div class="ars-key"><div class="ars-circle">2</div><div><div style="font-size:11px;font-weight:600">계약 변경</div><div style="font-size:10px;color:var(--tsub)">납입·해지</div></div></div>
+              <div class="ars-key"><div class="ars-circle">3</div><div><div style="font-size:11px;font-weight:600">긴급출동</div><div style="font-size:10px;color:var(--tsub)">24시간</div></div></div>
+              <div class="ars-key"><div class="ars-circle">4</div><div><div style="font-size:11px;font-weight:600">보험료 납입</div><div style="font-size:10px;color:var(--tsub)">가상계좌</div></div></div>
+              <div class="ars-key"><div class="ars-circle" style="background:var(--gray)">9</div><div><div style="font-size:11px;font-weight:600">앱·챗봇</div><div style="font-size:10px;color:var(--tsub)">비대면</div></div></div>
+            </div>
+            <div class="info" style="margin-top:8px">💡 ARS 연결 즉시 <b>0번</b>을 누르면 상담원으로 바로 연결됩니다.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. Q&A -->
+      <div id="panel-qa" class="panel">
+        <div class="ph"><span class="ph-t">Q&amp;A 모범답변 10선</span><span class="ph-s">클릭하면 답변 확인</span></div>
+        <div class="pb" id="qa-list"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 관리자 대시보드 -->
+  <div id="pg-admin" style="display:none;flex:1;flex-direction:column;overflow-y:auto">
+    <div class="ph"><span class="ph-t">관리자 대시보드</span><span class="ph-s">2025년 5월 · 실시간</span></div>
+    <div class="pb">
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-l">AI 처리 건수</div><div class="kpi-v" id="m1">0</div><div class="kpi-s">전월 +38%</div></div>
+        <div class="kpi"><div class="kpi-l">콜센터 감소율</div><div class="kpi-v" id="m2">0%</div><div class="kpi-s">목표 달성</div></div>
+        <div class="kpi"><div class="kpi-l">평균 응답시간</div><div class="kpi-v" id="m3">0s</div><div class="kpi-s">기존 대비 -94%</div></div>
+        <div class="kpi"><div class="kpi-l">고객 만족도</div><div class="kpi-v" id="m4">0</div><div class="kpi-s">5점 만점</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-t">월별 AI 처리 vs 콜센터 인입</div>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--tsub)"><div style="width:8px;height:8px;background:var(--blue);border-radius:2px"></div>AI 처리</div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--tsub)"><div style="width:8px;height:8px;background:var(--lblue);border-radius:2px"></div>콜센터</div>
+        </div>
+        <div class="bar-wrap" id="bar-wrap"></div>
+        <div style="display:flex;gap:4px;margin-top:3px" id="bar-lbl"></div>
+      </div>
+      <div class="two-col">
+        <div class="chart-card">
+          <div class="chart-t">문의 유형 분포</div>
+          <div class="pie-wrap">
+            <svg width="70" height="70" viewBox="0 0 70 70">
+              <circle cx="35" cy="35" r="28" fill="none" stroke="#E6F1FB" stroke-width="13"/>
+              <circle cx="35" cy="35" r="28" fill="none" stroke="#1B2F5C" stroke-width="13" stroke-dasharray="35 176" stroke-dashoffset="0"/>
+              <circle cx="35" cy="35" r="28" fill="none" stroke="#1E5FAD" stroke-width="13" stroke-dasharray="31 176" stroke-dashoffset="-35"/>
+              <circle cx="35" cy="35" r="28" fill="none" stroke="#4A90D9" stroke-width="13" stroke-dasharray="28 176" stroke-dashoffset="-66"/>
+              <circle cx="35" cy="35" r="28" fill="none" stroke="#B5D4F4" stroke-width="13" stroke-dasharray="23 176" stroke-dashoffset="-94"/>
+              <circle cx="35" cy="35" r="28" fill="none" stroke="#D6E8FA" stroke-width="13" stroke-dasharray="20 176" stroke-dashoffset="-117"/>
+            </svg>
+            <div>
+              <div class="leg"><div class="ld" style="background:#1B2F5C"></div>납입 확인 25%</div>
+              <div class="leg"><div class="ld" style="background:#1E5FAD"></div>청구 서류 22%</div>
+              <div class="leg"><div class="ld" style="background:#4A90D9"></div>계약 조회 19%</div>
+              <div class="leg"><div class="ld" style="background:#B5D4F4"></div>증권 재발급 16%</div>
+              <div class="leg"><div class="ld" style="background:#D6E8FA"></div>기타 18%</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-t">실시간 처리 로그</div>
+          <div id="log-list">
+            <div class="log-row"><span class="lt ai">AI</span><span class="lm">납입 확인 — 박지수</span><span class="ltm">방금</span></div>
+            <div class="log-row"><span class="lt ai">AI</span><span class="lm">청구 서류 — 이현우</span><span class="ltm">1분 전</span></div>
+            <div class="log-row"><span class="lt cs">CS</span><span class="lm">복잡 민원 — 김영희</span><span class="ltm">3분 전</span></div>
+            <div class="log-row"><span class="lt ai">AI</span><span class="lm">계약 조회 — 최동훈</span><span class="ltm">5분 전</span></div>
+            <div class="log-row"><span class="lt ai">AI</span><span class="lm">해지환급금 — 강미래</span><span class="ltm">7분 전</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-t">월별 비용 절감 (단위: 만원)</div>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:50px" id="cost-wrap"></div>
+        <div style="margin-top:8px;padding:8px 10px;background:var(--lgray);border-radius:8px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;color:var(--tsub)">2025년 누적 절감액</span>
+          <span style="font-size:16px;font-weight:700;color:var(--grn)">6,750만원</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SYS=`당신은 한화손보 AI 상담 직원입니다. 아래 고객 정보를 바탕으로 2~4문장 이내로 친절하게 답변하세요. 마크다운 사용 금지.
+[고객] 이름:김민준 / 고객번호:2019-038471
+[계약] ①무배당종신보험(21-3847102) 월납198,400원 사망1억 정상유지 ②실손의료보험(22-9041523) 월납42,100원 연5천만한도 정상유지 ③어린이보험(23-1120038) 피보험자김다인(자녀) 월납67,300원 미납중
+[최근청구] 2025.04.12 실손외래 34,200원 지급완료
+[해지환급금] 종신4,820,000원(납입대비31.2%)
+[연락처] 고객센터1566-8000 / 긴급출동1588-8282 / 담당FP이서연 010-9231-4872`;
+let hist=[];
+async function callClaude(msg){
+  document.getElementById('ai-st').textContent='응답 생성 중...';
+  hist.push({role:'user',content:msg});
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYS,messages:hist})});
+    const d=await r.json();
+    const txt=d.content?.[0]?.text||'잠시 후 다시 시도해 주세요.';
+    hist.push({role:'assistant',content:txt});
+    document.getElementById('ai-st').textContent='대기 중';
+    return txt;
+  }catch(e){document.getElementById('ai-st').textContent='오류';return '네트워크 오류가 발생했습니다.';}
+}
+function addMsg(txt,who){const c=document.getElementById('msgs');const d=document.createElement('div');d.className='msg '+(who==='user'?'u':'');d.innerHTML=(who==='user'?'<div class="av me">김</div>':'<div class="av ai">🤖</div>')+`<div class="bub ${who==='user'?'u':''}">${txt}</div>`;c.appendChild(d);c.scrollTop=c.scrollHeight;}
+function addAiMsg(txt){const c=document.getElementById('msgs');const d=document.createElement('div');d.className='msg';d.innerHTML=`<div class="av ai">🤖</div><div><div class="bub">${txt}</div><div class="qbtns"><button class="qb" onclick="sendQ('고객센터 번호 알려주세요')">고객센터</button><button class="qb" onclick="sendQ('담당 FP 연결해주세요')">FP 연결</button></div></div>`;c.appendChild(d);c.scrollTop=c.scrollHeight;}
+function showTyping(){const c=document.getElementById('msgs');const d=document.createElement('div');d.className='msg';d.id='ty';d.innerHTML=`<div class="av ai">🤖</div><div class="bub"><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;c.appendChild(d);c.scrollTop=c.scrollHeight;}
+function rmTyping(){const t=document.getElementById('ty');if(t)t.remove();}
+function sendQ(txt){document.getElementById('ci').value=txt;hs();}
+function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();hs();}}
+async function hs(){const inp=document.getElementById('ci');const txt=inp.value.trim();if(!txt)return;inp.value='';addMsg(txt,'user');showTyping();const r=await callClaude(txt);rmTyping();addAiMsg(r);}
+function switchTab(name,el){document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('on'));el.classList.add('on');document.getElementById('pg-self').style.display=name==='self'?'flex':'none';document.getElementById('pg-admin').style.display=name==='admin'?'flex':'none';if(name==='admin')animMetrics();}
+function showPanel(name,el){document.querySelectorAll('.si').forEach(i=>i.classList.remove('on'));el.classList.add('on');document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));document.getElementById('panel-'+name).classList.add('on');}
+function certDone(){document.getElementById('cert-ok').style.display='block';}
+function doUpload(){document.getElementById('up-ok').style.display='block';document.getElementById('c-prog').style.width='75%';}
+function goClaimDone(){document.getElementById('claim-s2').style.display='none';document.getElementById('claim-s3').style.display='block';['st2','st3','st4'].forEach(id=>{const e=document.getElementById(id);e.classList.remove('active');e.classList.add('done');e.textContent='✓';});['sl2','sl3'].forEach(id=>document.getElementById(id).classList.add('done'));const b=document.getElementById('claim-badge');b.textContent='접수 완료';b.className='badge bg-g';}
+function resetClaim(){document.getElementById('claim-s2').style.display='block';document.getElementById('claim-s3').style.display='none';document.getElementById('up-ok').style.display='none';document.getElementById('c-prog').style.width='40%';['st2','st3','st4'].forEach((id,i)=>{const e=document.getElementById(id);e.classList.remove('done');if(i===0)e.classList.add('active');e.textContent=String(i+2);});['sl2','sl3'].forEach(id=>document.getElementById(id).classList.remove('done'));const b=document.getElementById('claim-badge');b.textContent='서류 준비 중';b.className='badge bg-b';}
+function togTag(el,grp){const c=document.getElementById(grp==='sit'?'sit-tags':'type-tags');c.querySelectorAll('.tag').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
+function runCovCheck(){
+  const s=(document.querySelector('#sit-tags .tag.on')||{textContent:'외래 진료'}).textContent;
+  const t=(document.querySelector('#type-tags .tag.on')||{textContent:'일반 질병'}).textContent;
+  const R={'외래 진료':{'일반 질병':{ok:'실손의료보험',rate:'80%',limit:'연 5,000만원',note:'공제금액 5,000원 차감 후 지급'},'재해/사고':{ok:'실손+어린이',rate:'100%',note:'재해 의료비 공제 없음'},'선천성 질환':{part:'어린이보험',rate:'50%',note:'선천성 특약 적용'},'정신과':{no:'정신과 외래',note:'실손 보장 제외'}},'입원':{'일반 질병':{ok:'실손의료보험',rate:'90%',limit:'연 5,000만원',note:'입원 공제금액 적용'},'재해/사고':{ok:'실손+어린이',rate:'100%',note:'재해 입원 공제 없음'},'선천성 질환':{part:'어린이보험',rate:'50%',note:'특약 적용, 실손 제외'},'정신과':{no:'정신과 입원',note:'보장 제외'}},'수술':{'일반 질병':{ok:'실손의료보험',rate:'90%',note:'급여 수술비 기준'},'재해/사고':{ok:'실손+어린이',rate:'100%',note:'재해 수술 공제 없음'},'선천성 질환':{part:'어린이보험',rate:'50%',note:'특약 범위 내'},'정신과':{no:'정신과 수술',note:'보장 제외'}},'암 진단':{'일반 질병':{no:'암 진단금',note:'암 진단 특약 미가입. 추가 가입 권장'},'재해/사고':{no:'재해 암',note:'암은 질병으로 분류'},'선천성 질환':{no:'선천성 암',note:'보장 제외'},'정신과':{no:'해당없음',note:'해당 없음'}},'골절/상해':{'일반 질병':{part:'실손보험',rate:'80%',note:'질병성 골절 실손 적용'},'재해/사고':{ok:'실손+어린이',rate:'100%',note:'재해 골절 공제 없음'},'선천성 질환':{no:'선천성 골격 이상',note:'보장 제외'},'정신과':{no:'해당없음',note:'해당 없음'}},'사망':{'일반 질병':{ok:'무배당 종신보험',rate:'100%',limit:'1억원',note:'질병 사망 시 1억 지급'},'재해/사고':{ok:'무배당 종신보험',rate:'100%',limit:'1억원',note:'재해 사망 동일 지급'},'선천성 질환':{ok:'무배당 종신보험',rate:'100%',limit:'1억원',note:'원인 불문 사망 시 지급'},'정신과':{no:'자해·자살',note:'약관 조건에 따라 지급 제한 가능'}}};
+  const res=(R[s]&&R[s][t])||{no:'확인 불가',note:'별도 확인 필요'};
+  let html='';
+  if(res.ok)html=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700">${res.ok}</span><span class="badge bg-g">보장됨</span></div><div style="font-size:11px;color:var(--tsub);line-height:1.6"><b style="color:var(--text)">지급률:</b> ${res.rate||''} ${res.limit?'· 한도: '+res.limit:''}<br>${res.note}</div></div>`;
+  else if(res.part)html=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700">${res.part}</span><span class="badge bg-o">부분 보장</span></div><div style="font-size:11px;color:var(--tsub);line-height:1.6"><b style="color:var(--text)">지급률:</b> ${res.rate||''}<br>${res.note}</div></div>`;
+  else html=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700">${res.no||'해당없음'}</span><span class="badge bg-r">보장 제외</span></div><div style="font-size:11px;color:var(--tsub);line-height:1.6">${res.note}</div></div>`;
+  html+=`<div class="info">ℹ 정확한 내용은 <b>1566-8000</b> 또는 담당 FP에게 확인하세요.</div>`;
+  document.getElementById('cov-result').innerHTML=html;
+}
+let scen='normal';
+function setScen(sc,el){scen=sc;document.querySelectorAll('.sc-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');calcUpd();}
+function calcUpd(){
+  const yr=parseInt(document.getElementById('yr-sl').value);
+  const mp=parseInt(document.getElementById('mp-sl').value);
+  document.getElementById('yr-lbl').textContent=yr+'년';
+  document.getElementById('mp-lbl').textContent=mp.toLocaleString()+'원';
+  const total=yr*12*mp;
+  document.getElementById('c-total').textContent=total.toLocaleString()+'원';
+  const rates={normal:0.72,pause:0.55,reduce:0.48,quit:0.31};
+  const periods={normal:'납입 기간 계속 유지',pause:'최대 1년 유예',reduce:'이후 보험료 면제',quit:'즉시 해지'};
+  const rLabels={normal:'약 72% (장기 시 100%+)',pause:'약 55%',reduce:'약 48%',quit:'약 31%'};
+  const tips={normal:'장기 유지할수록 환급률 상승',pause:'재정 어려움 시 최대 1년 유예',reduce:'보험료 부담 제거, 보장 일부 유지',quit:'지금 해지 시 손실 가장 큼'};
+  const warns={normal:'',pause:'이자가 붙어 환급금이 소폭 감소합니다.',reduce:'보장 금액이 40~60%로 줄어듭니다.',quit:`해지 시 약 ${Math.round(total*(1-rates.quit)).toLocaleString()}원 손실 예상.`};
+  const nms={normal:'정상 유지',pause:'납입 유예',reduce:'감액 완납',quit:'해지'};
+  document.getElementById('c-refund').textContent=Math.round(total*rates[scen]).toLocaleString()+'원';
+  document.getElementById('sc-nm').textContent=nms[scen];
+  document.getElementById('sc-rate').textContent=rLabels[scen];
+  document.getElementById('sc-period').textContent=periods[scen];
+  document.getElementById('sc-tip').textContent=tips[scen];
+  const wb=document.getElementById('sc-warn');
+  if(warns[scen]){wb.style.display='block';wb.textContent=warns[scen];}else wb.style.display='none';
+}
+const QA=[
+  {n:1,cat:'보험료',q:'보험료가 왜 이렇게 많이 올랐나요?',a:'갱신형 보험은 1~5년 단위로 재산정됩니다. 나이 증가·손해율 악화·예정이율 하락이 주요 원인입니다. 비갱신형 전환이나 특약 조정으로 보험료를 낮출 수 있으니 1566-8000으로 문의하세요.',tip:'갱신 통지서에 인상 사유가 명시되어 있습니다.'},
+  {n:2,cat:'청구',q:'보험금 청구 서류가 뭔가요?',a:'실손 외래는 ①진료비 영수증 ②진료비 세부내역서가 필수입니다. 앱 간편청구·홈페이지 업로드·우편으로 접수 가능하며 통상 3 영업일 이내 지급됩니다.',tip:'앱 간편청구가 가장 빠릅니다.'},
+  {n:3,cat:'보장',q:'제가 가입한 보험이 이 경우 보장이 되나요?',a:'보장 여부는 상품·특약·진단명에 따라 달라집니다. 좌측 보장 체크 메뉴에서 상황을 선택하면 즉시 확인할 수 있습니다.',tip:'정확한 내용은 1566-8000 또는 담당 FP에게 확인하세요.'},
+  {n:4,cat:'해지·환급',q:'해지하면 얼마 돌려받을 수 있나요?',a:'종신보험 초기에는 납입액의 30% 수준이지만 장기 유지 시 납입액을 초과합니다. 해지 전 납입유예·감액완납 등 대안을 먼저 검토하세요.',tip:'납입 계산기에서 시나리오를 직접 비교해 보세요.'},
+  {n:5,cat:'자동이체',q:'자동이체 계좌를 바꾸고 싶어요.',a:'앱 > 마이페이지 > 납입 관리 > 자동이체 변경에서 가능합니다. 본인 명의 계좌만 등록 가능하며 변경 후 다음 회차부터 새 계좌에서 출금됩니다.',tip:'변경 완료 후 문자 확인 안내가 발송됩니다.'},
+  {n:6,cat:'실손청구',q:'실손보험 청구했는데 왜 일부만 나왔나요?',a:'비급여·상급병실료·선택진료비 등 제외 항목이 있으며 자기부담금이 공제됩니다. 이의가 있으면 1566-8000으로 재심사를 신청하세요.',tip:'지급 내역서는 앱 > 청구 이력에서 확인 가능합니다.'},
+  {n:7,cat:'납입',q:'보험료 납입을 잠깐 멈출 수 있나요?',a:'납입 유예 제도를 이용하면 최대 1년간 납입 중단 시에도 보장이 유지됩니다. 실손보험은 납입유예 불가, 종신·어린이보험에 적용 가능합니다.',tip:'납입 계산기에서 유예 시나리오를 미리 확인해 보세요.'},
+  {n:8,cat:'계약',q:'제가 어떤 보험에 가입돼 있나요?',a:'좌측 계약 조회에서 보유 계약 전체를 확인할 수 있습니다. 현재 ①무배당 종신보험 ②실손의료보험 ③어린이보험 3개 계약이 있습니다.',tip:'타사 보험 포함 전체는 금융감독원 내 보험 찾아줌 서비스를 이용하세요.'},
+  {n:9,cat:'수익자',q:'수익자를 변경하고 싶어요.',a:'앱 > 계약 관리 > 수익자 변경에서 가능합니다. 본인 인증 후 변경 대상자의 주민등록번호와 관계를 입력하면 됩니다.',tip:'수익자 변경은 피보험자 생존 시에만 가능합니다.'},
+  {n:10,cat:'갱신',q:'만기가 됐는데 자동으로 갱신되나요?',a:'갱신형 보험은 만기 1개월 전 안내 문자가 발송되며 별도 의사 표시 없으면 자동 갱신됩니다. 갱신을 원하지 않으면 만기 전 1566-8000으로 해지 신청하세요.',tip:'비갱신형 전환 상담은 담당 FP에게 문의하세요.'},
+];
+function buildQA(){const el=document.getElementById('qa-list');QA.forEach(item=>{const d=document.createElement('div');d.className='qa-item';d.innerHTML=`<div class="qa-q" onclick="togQA(this.parentElement)"><div class="qa-num">${item.n}</div><div class="qa-qtxt">${item.q}</div><span class="qa-cat">${item.cat}</span><span class="qa-chev">▾</span></div><div class="qa-ans">${item.a}<div class="qa-tip">💡 ${item.tip}</div></div>`;el.appendChild(d);});}
+function togQA(el){const o=el.classList.contains('open');document.querySelectorAll('.qa-item').forEach(i=>i.classList.remove('open'));if(!o)el.classList.add('open');}
+const months=['1월','2월','3월','4월','5월','6월'];
+const aiD=[1200,1850,2400,3100,3800,4520];const csD=[4800,4200,3600,3100,2600,2100];const saves=[480,740,960,1240,1520,1810];
+function buildCharts(){
+  const bw=document.getElementById('bar-wrap');const bl=document.getElementById('bar-lbl');const mx=Math.max(...aiD,...csD);
+  months.forEach((m,i)=>{const col=document.createElement('div');col.className='bcol';col.style.flex='1';const ah=Math.round((aiD[i]/mx)*75);const ch=Math.round((csD[i]/mx)*75);col.innerHTML=`<div style="display:flex;gap:2px;align-items:flex-end;width:100%"><div class="bar ai" style="height:${ah}px;flex:1"></div><div class="bar cs" style="height:${ch}px;flex:1"></div></div>`;bw.appendChild(col);const lb=document.createElement('div');lb.style.cssText='flex:1;text-align:center;font-size:9px;color:var(--tmut)';lb.textContent=m;bl.appendChild(lb);});
+  const cw=document.getElementById('cost-wrap');const ms=Math.max(...saves);
+  saves.forEach((s,i)=>{const col=document.createElement('div');col.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;gap:2px';const h=Math.round((s/ms)*44);col.innerHTML=`<div style="font-size:9px;color:var(--tmut)">${s}</div><div style="width:100%;height:${h}px;background:var(--grn);border-radius:2px 2px 0 0"></div><div style="font-size:9px;color:var(--tmut)">${months[i]}</div>`;cw.appendChild(col);});
+}
+function animMetrics(){const targets=[4520,63,1.8,4.7];const suffixes=['','%','s','점'];['m1','m2','m3','m4'].forEach((id,i)=>{const el=document.getElementById(id);let n=0;const tgt=targets[i];const step=tgt/30;const t=setInterval(()=>{n=Math.min(n+step,tgt);el.textContent=(tgt%1===0?Math.round(n).toLocaleString():n.toFixed(1))+suffixes[i];if(n>=tgt)clearInterval(t);},40);});}
+buildQA();buildCharts();calcUpd();
+</script>
+</body>
+</html>
